@@ -10,7 +10,20 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        // get user
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])){
+            return response()->json([
+                'success' => true,
+                'data' => $user
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid Credentials.'
+            ]);
+        }
+
+
+        /* // get user
         $user = User::where('username', $request->username)->first();
         // check if user exists
         if ($user) {
@@ -31,7 +44,7 @@ class UserController extends Controller
                 'success' => false,
                 'message' => 'User does not exist.'
             ]);
-        }
+        } */
     }
 
     /**
@@ -60,7 +73,7 @@ class UserController extends Controller
         // create a new user
         $user = new User();
         $user->username = $request->username;
-        $user->password = md5($request->password); 
+        $user->password = Hash::make($request->password); 
         $user->role = $request->role;
         $user->first_name = $request->first_name;
         $user->middle_name = $request->middle_name;
@@ -103,7 +116,7 @@ class UserController extends Controller
     {
         // update a user 
         $user->username = $request->username;
-        $user->password = $request->password?md5($request->password):$user->password;
+        $user->password = $request->password?Hash::make($request->password):$user->password;
         $user->role = $request->role;
         $user->first_name = $request->first_name;
         $user->middle_name = $request->middle_name;

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 }); */
 
 // group routes for user with prefix
-Route::prefix('users')->middleware(['cors'])->group(function () {
+Route::prefix('users')->group(function () {
     // get all users
     Route::get('/', 'App\Http\Controllers\UserController@index');
     // create a new user
