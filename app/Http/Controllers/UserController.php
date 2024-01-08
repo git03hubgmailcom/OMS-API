@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -13,7 +15,7 @@ class UserController extends Controller
         if (Auth::attempt(['username' => $request->username, 'password' => $request->password])){
             return response()->json([
                 'success' => true,
-                'data' => $user
+                'data' => $user = Auth::user()
             ]);
         } else {
             return response()->json([
