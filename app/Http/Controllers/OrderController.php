@@ -6,6 +6,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\CartItem;
+use App\Models\User;
 
 class OrderController extends Controller
 {
@@ -19,6 +21,22 @@ class OrderController extends Controller
         return response()->json($orders, 200);
         
     }
+
+    public function getOrdersOfAUser(String $user)
+    {
+        // get all orders of logged user
+        $orders = Order::where('user_id', $user)->with('user')->with('orderItems')->get();
+        return response()->json($orders, 200);
+        
+    }
+    /* {
+        $user = auth()->user();
+        return response()->json($user, 200);
+        // get all orders of logged user
+        $orders = Order::where('user_id', $user)->with('user')->with('orderItems')->get();
+        return response()->json($orders, 200);
+        
+    } */
 
     /**
      * Show the form for creating a new resource.
@@ -41,6 +59,7 @@ class OrderController extends Controller
         $order->date_paid = $request->payment_dateTime;
         $order->total_price = $request->total_price;
         $order->status = $request->status;
+        $order->payment_method = $request->payment_method;
 
         $order->save();
 
@@ -52,6 +71,9 @@ class OrderController extends Controller
             $order_items->total_price = $value['total_price'];
             $order_items->status = $request->status;
             $order_items->save();
+
+            $cart_item = CartItem::find($value['id']);
+            $cart_item->delete();
         }
 
         if($request->status=="paid"){
@@ -108,6 +130,7 @@ class OrderController extends Controller
         $order->date_paid = $request->date_paid? $request->date_paid : $order->date_paid;
         $order->total_price = $request->total_price? $request->total_price : $order->total_price;
         $order->status = $request->status? $request->status : $order->status;
+        $order->payment_method = $request->payment_method? $request->payment_method : $order->payment_method;
         $order->save();
         return response()->json([
             'message' => 'Order successfully updated.',

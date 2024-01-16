@@ -10,6 +10,22 @@ use App\Models\CollectionItem;
 class CollectionController extends Controller
 {
 
+    public function removeOrderToCollection(Collection $collection, Order $order, Request $request){
+        $collectionItem = CollectionItem::where('collection_id', $collection->id)->where('order_id', $order->id)->first();
+        $collectionItem->delete();
+
+        $collection->total_price = $collection->total_price - $order->total_price;
+        if(floatval($collection->total_price) < 0){
+            $collection->total_price = 0;
+        }
+        $collection->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => $collectionItem
+        ]);
+    }
+
     public function addOrderToCollection(Collection $collection, Order $order, Request $request)
     {
         // get collection
@@ -31,7 +47,11 @@ class CollectionController extends Controller
         $newCollectionitem = new CollectionItem();
         $newCollectionitem->collection_id = $collection->id;
         $newCollectionitem->order_id = $order->id;
+        $newCollectionitem->status = "paid";
         $newCollectionitem->save();
+
+        $collection->total_price = $collection->total_price + $order->total_price;
+        $collection->save();
         
         return response()->json([
             'success' => true,
@@ -39,13 +59,22 @@ class CollectionController extends Controller
         ]);
     }
 
+
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
         // get all collections of user_id = $request->user()->id
-        $collections = Collection::where('user_id', $request->user_id)->get();
+        $collections = Collection::get();
+        return response()->json($collections);
+    }
+
+    public function getCollectionsOfAUser(Request $request, String $user)
+    {
+        // get all collections of user_id = $request->user()->id
+        $collections = Collection::where('user_id', $user)->get();
         return response()->json($collections);
     }
 
@@ -136,6 +165,19 @@ class CollectionController extends Controller
      */
     public function update(Request $request, Collection $collection)
     {
+        $collectionItems = CollectionItem::where('collection_id', $collection->id)->get();
+        foreach($collectionItems as $collectionItem){
+            $collectionItem->status = $request->status? $request->status : $collectionItem->status;
+            $collectionItem->save();
+
+            $order = Order::find($collectionItem->order_id);
+            $order->status = $request->status? $request->status : $order->status;
+            $order->save();
+
+        }
+
+
+
         // update collection
         $collection->status = $request->status? $request->status : $collection->status;
         $collection->total_price = $request->total_price? $request->total_price : $collection->total_price;
@@ -153,6 +195,7 @@ class CollectionController extends Controller
     public function destroy(Collection $collection)
     {
         // delete collection
+        CollectionItem::where('collection_id', $collection->id)->delete();
         $collection->delete();
         return response()->json([
             'success' => true,

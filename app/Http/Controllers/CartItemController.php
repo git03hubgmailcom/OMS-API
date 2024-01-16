@@ -10,14 +10,14 @@ class CartItemController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, String $user)
     {
         // get all cart items filtered by user id with menu
         //$cartItems = CartItem::where('user_id', $request->user_id)->with('menu')->get();
         //$cartItems = CartItem::where('user_id', $request->user_id)->get();
 
         // get all cart items with menu
-        $cartItems = CartItem::with('menu')->get();
+        $cartItems = CartItem::where('user_id',$user)->with('menu')->get();
         return response()->json($cartItems, 200);
     }
 

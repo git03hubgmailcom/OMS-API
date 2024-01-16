@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 }); */
 
 // group routes for user with prefix
-Route::prefix('users')->group(function () {
+Route::prefix('users')->middleware(['cors'])->group(function () {
     // get all users
     Route::get('/', 'App\Http\Controllers\UserController@index');
     // create a new user
@@ -52,6 +52,8 @@ Route::prefix('menus')->middleware(['cors'])->group(function () {
 Route::prefix('orders')->middleware(['cors'])->group(function () {
     // get all orders
     Route::get('/', 'App\Http\Controllers\OrderController@index');
+    // get all orders of logged user
+    Route::get('/user/{userId}', 'App\Http\Controllers\OrderController@getOrdersOfAUser');
     // create a new order
     Route::post('/', 'App\Http\Controllers\OrderController@store');
     // get a specific order
@@ -66,7 +68,7 @@ Route::prefix('orders')->middleware(['cors'])->group(function () {
 // group routes for cart item with prefix
 Route::prefix('cart-items')->middleware(['cors'])->group(function () {
     // get all cart items
-    Route::get('/', 'App\Http\Controllers\CartItemController@index');
+    Route::get('/user/{userId}', 'App\Http\Controllers\CartItemController@index');
     // create a new cart item
     Route::post('/', 'App\Http\Controllers\CartItemController@store');
     // get a specific cart item
@@ -81,6 +83,8 @@ Route::prefix('cart-items')->middleware(['cors'])->group(function () {
 Route::prefix('collections')->middleware(['cors'])->group(function () {
     // get all collections
     Route::get('/', 'App\Http\Controllers\CollectionController@index');
+
+    Route::get('/user/{userId}', 'App\Http\Controllers\CollectionController@getCollectionsOfAUser');
     // create a new collection
     Route::post('/', 'App\Http\Controllers\CollectionController@store');
     // get a specific collection
@@ -92,6 +96,8 @@ Route::prefix('collections')->middleware(['cors'])->group(function () {
 
     // add order to collection
     Route::post('/{collection}/add-order/{order}', 'App\Http\Controllers\CollectionController@addOrderToCollection');
+    Route::delete('/{collection}/remove-order/{order}', 'App\Http\Controllers\CollectionController@removeOrderToCollection');
+    
 
     // get collection item
     Route::get('/{collectionItem}/collection-item', 'App\Http\Controllers\CollectionController@getCollectionItem');
